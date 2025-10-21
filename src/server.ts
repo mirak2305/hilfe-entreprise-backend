@@ -9,6 +9,9 @@ import dotenv from 'dotenv';
 // Charger les variables d'environnement
 dotenv.config();
 
+// Import des routes
+import { authRoutes } from './routes/auth.routes';
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
@@ -35,6 +38,9 @@ app.use(limiter);
 // Middleware pour parser le JSON
 app.use(express.json({ limit: '10mb' }));
 
+// Routes de l'API
+app.use('/api/auth', authRoutes);
+
 // Routes de base
 app.get('/health', (req, res) => {
   res.json({
@@ -51,8 +57,8 @@ app.get('/', (req, res) => {
     version: '2.0.0',
     status: 'running',
     endpoints: {
-      health: '/health',
-      docs: 'https://github.com/mirak2305/hilfe-entreprise-backend'
+      auth: '/api/auth',
+      health: '/health'
     }
   });
 });
@@ -82,6 +88,7 @@ const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`🚀 HILFE Enterprise Backend running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔐 Auth routes: http://localhost:${PORT}/api/auth`);
  
   // Vérification des variables d'environnement
   if (!process.env.SUPABASE_URL) {
@@ -89,5 +96,8 @@ server.listen(PORT, () => {
   }
   if (!process.env.OPENAI_API_KEY) {
     console.warn('⚠️  OPENAI_API_KEY non configuré');
+  }
+  if (!process.env.JWT_SECRET) {
+    console.warn('⚠️  JWT_SECRET non configuré');
   }
 });
