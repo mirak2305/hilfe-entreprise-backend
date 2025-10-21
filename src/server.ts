@@ -12,6 +12,7 @@ dotenv.config();
 // Import des routes
 import { authRoutes } from './routes/auth.routes';
 import { adminRoutes } from './routes/admin.routes';
+import { chatRoutes } from './routes/chat.routes';
 
 const app = express();
 const server = createServer(app);
@@ -42,6 +43,7 @@ app.use(express.json({ limit: '10mb' }));
 // Routes de l'API
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Routes de base
 app.get('/health', (req, res) => {
@@ -61,9 +63,24 @@ app.get('/', (req, res) => {
     status: 'running',
     environment: process.env.NODE_ENV || 'development',
     endpoints: {
-      auth: '/api/auth',
-      admin: '/api/admin',
-      health: '/health'
+      auth: {
+        login: 'POST /api/auth/login',
+        profile: 'GET /api/auth/me',
+        changePassword: 'POST /api/auth/change-password'
+      },
+      admin: {
+        companies: 'GET /api/admin/companies',
+        createCompany: 'POST /api/admin/companies',
+        companyUsers: 'GET /api/admin/companies/:companyId/users',
+        createUser: 'POST /api/admin/users',
+        companyDocuments: 'GET /api/admin/companies/:companyId/documents'
+      },
+      chat: {
+        sendMessage: 'POST /api/chat/message',
+        conversations: 'GET /api/chat/conversations',
+        conversationMessages: 'GET /api/chat/conversations/:conversationId/messages'
+      },
+      health: 'GET /health'
     }
   });
 });
@@ -93,8 +110,23 @@ app.use('*', (req, res) => {
     error: 'Route not found',
     path: req.originalUrl,
     available_endpoints: {
-      auth: ['POST /api/auth/login', 'GET /api/auth/me', 'POST /api/auth/change-password'],
-      admin: ['GET /api/admin/companies', 'POST /api/admin/companies', 'GET /api/admin/companies/:companyId/users', 'POST /api/admin/users'],
+      auth: [
+        'POST /api/auth/login',
+        'GET /api/auth/me', 
+        'POST /api/auth/change-password'
+      ],
+      admin: [
+        'GET /api/admin/companies',
+        'POST /api/admin/companies',
+        'GET /api/admin/companies/:companyId/users',
+        'POST /api/admin/users',
+        'GET /api/admin/companies/:companyId/documents'
+      ],
+      chat: [
+        'POST /api/chat/message',
+        'GET /api/chat/conversations',
+        'GET /api/chat/conversations/:conversationId/messages'
+      ],
       health: 'GET /health'
     }
   });
@@ -116,6 +148,7 @@ server.listen(PORT, () => {
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🔐 Auth routes: http://localhost:${PORT}/api/auth`);
   console.log(`👑 Admin routes: http://localhost:${PORT}/api/admin`);
+  console.log(`💬 Chat routes: http://localhost:${PORT}/api/chat`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   
   // Vérification des variables d'environnement
